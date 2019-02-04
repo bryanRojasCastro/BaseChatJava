@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
-import java.io.DataInputStream;
 
 public class Servidor extends JFrame implements Runnable {
 
@@ -20,7 +18,6 @@ public class Servidor extends JFrame implements Runnable {
 	private Socket socketEscuha;
 	private JLabel lblServer;
 	private JTextArea textArea;
-	private DataInputStream dtInput;
 	private BufferedReader bufferFromClient;
 
 	public static void main(String[] args) {
@@ -30,25 +27,24 @@ public class Servidor extends JFrame implements Runnable {
 
 	public Servidor() {
 		initComponents();
-		// this.run();
 	}
 
 	private void initComponents() {
 
 		frame = new JFrame();
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		frame.setBounds(100, 100, 199, 291);
+		frame.setBounds(800, 100, 199, 291);
 		frame.getContentPane().setLayout(null);
 
 		lblServer = new JLabel("Servidor");
 		lblServer.setBounds(57, 21, 55, 14);
 
-		JTextArea txtrTest = new JTextArea();
-		txtrTest.setBounds(10, 45, 163, 173);
-		txtrTest.setEditable(true);
+		textArea = new JTextArea();
+		textArea.setBounds(10, 45, 163, 173);
+		textArea.setEditable(true);
 
 		frame.getContentPane().add(lblServer);
-		frame.getContentPane().add(txtrTest);
+		frame.getContentPane().add(textArea);
 
 		frame.setVisible(true);
 		Thread hiloEscuchaCliente = new Thread(this);
@@ -56,36 +52,39 @@ public class Servidor extends JFrame implements Runnable {
 	}
 
 	public void run() {
+	
 
 		try {
+			servidor = new ServerSocket(6666);
 
 			while (true) {
-				System.out.println("Esperando..");
-				servidor = new ServerSocket(6666);
-				socketEscuha = servidor.accept();// socket para el cliente que
-													// esta a la escucha
+				System.out.println("Esperando..");				
+				
+				// socket para el cliente queesta a la escucha
+				socketEscuha = servidor.accept();
+				
 				System.out.println("cliente en linea");
 				// obtener flujo entrante desde el cliente
 				bufferFromClient = new BufferedReader(new InputStreamReader(
-						socketEscuha.getInputStream()));
+						socketEscuha.getInputStream(), "UTF-8"));
 
-				System.out.println("Mensaje que llego: "
-						+ bufferFromClient.readLine());
-
+				String mensaje = bufferFromClient.readLine();
+				
+				System.out.println("Mensaje que llego: " + mensaje);
 				// establecer mensaje al servidor
 				if (textArea == null) {
 					textArea = new JTextArea();
-					textArea.setText(bufferFromClient.readLine() + "\n");
+					textArea.append(mensaje + "\n");
 				} else {
-					textArea.setText(bufferFromClient.readLine() + "\n");
+					textArea.append(mensaje + "\n");
+				
 				}
-
 				socketEscuha.close();
 				bufferFromClient.close();
 
 			}
 		} catch (IOException e) {
-			e.getMessage();
+			System.err.println(e.getMessage());
 		}
 
 	}
